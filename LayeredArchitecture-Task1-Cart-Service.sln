@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LayeredArchitecture-Task1-C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LayeredArchitecture-Task1-Cart-Service.Repository", "LayeredArchitecture-Task1-Cart-Service.Repository\LayeredArchitecture-Task1-Cart-Service.Repository.csproj", "{1AD45441-5E07-4B77-954F-C96D2C5266F7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LayeredArchitecture-Task1-Cart-Service.Tests", "LayeredArchitecture-Task1-Cart-Service.Tests\LayeredArchitecture-Task1-Cart-Service.Tests.csproj", "{FAB517A9-63A4-44F9-825C-C31EDF3C8BF6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{1AD45441-5E07-4B77-954F-C96D2C5266F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1AD45441-5E07-4B77-954F-C96D2C5266F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1AD45441-5E07-4B77-954F-C96D2C5266F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAB517A9-63A4-44F9-825C-C31EDF3C8BF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAB517A9-63A4-44F9-825C-C31EDF3C8BF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAB517A9-63A4-44F9-825C-C31EDF3C8BF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAB517A9-63A4-44F9-825C-C31EDF3C8BF6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

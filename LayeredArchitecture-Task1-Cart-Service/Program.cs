@@ -1,4 +1,5 @@
 using LayeredArchitecture_Task1_Cart_Service.Business;
+using LayeredArchitecture_Task1_Cart_Service.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,7 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
 builder.Services.AddBusinessServices();
+builder.Services.AddRepositoryServices();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
