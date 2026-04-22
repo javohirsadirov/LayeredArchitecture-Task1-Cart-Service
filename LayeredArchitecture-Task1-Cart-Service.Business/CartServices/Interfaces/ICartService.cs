@@ -4,7 +4,7 @@ namespace LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interface
 
 public interface ICartService
 {
-    public Task<List<CartDto>> GetCartListAsync(Guid cartId);
+    public Task<CartDto> GetCartListAsync(Guid cartId);
 
     public Task AddToCartAsync(Guid cartId, ItemDto cartItem);
 

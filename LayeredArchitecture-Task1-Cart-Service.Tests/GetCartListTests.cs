@@ -23,20 +23,17 @@ public class GetCartListTests
     {
         // Arrange
         var cartId = Guid.NewGuid();
-        var expectedItems = new List<CartDto>
+        var expectedCart = new CartDto
         {
-            new CartDto
-            {
-                Id = cartId,
-                CartItems =
-                [
-                    new ItemDto { Id = Guid.NewGuid(), Name = "Item1", Quantity = 1, Price = 9.99m }
-                ]
-            }
+            Id = cartId,
+            CartItems =
+            [
+                new ItemDto { Id = Guid.NewGuid(), Name = "Item1", Quantity = 1, Price = 9.99m }
+            ]
         };
         _cartServiceMock
             .Setup(s => s.GetCartListAsync(cartId))
-            .ReturnsAsync(expectedItems);
+            .ReturnsAsync(expectedCart);
 
         // Act
         var result = await _controller.GetCartList(cartId);
@@ -44,17 +41,18 @@ public class GetCartListTests
         // Assert
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
         var okResult = (OkObjectResult)result;
-        Assert.That(okResult.Value, Is.EqualTo(expectedItems));
+        Assert.That(okResult.Value, Is.EqualTo(expectedCart));
     }
 
     [Test]
-    public async Task GetCartList_ReturnsOkResult_WithEmptyList_WhenCartIsEmpty()
+    public async Task GetCartList_ReturnsOkResult_WithEmptyCartItems_WhenCartIsEmpty()
     {
         // Arrange
         var cartId = Guid.NewGuid();
+        var expectedCart = new CartDto { Id = cartId };
         _cartServiceMock
             .Setup(s => s.GetCartListAsync(cartId))
-            .ReturnsAsync(new List<CartDto>());
+            .ReturnsAsync(expectedCart);
 
         // Act
         var result = await _controller.GetCartList(cartId);
@@ -62,7 +60,9 @@ public class GetCartListTests
         // Assert
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
         var okResult = (OkObjectResult)result;
-        Assert.That(okResult.Value, Is.InstanceOf<List<CartDto>>());
+        var cart = okResult.Value as CartDto;
+        Assert.That(cart, Is.Not.Null);
+        Assert.That(cart!.CartItems, Is.Empty);
     }
 
     [Test]
@@ -72,7 +72,7 @@ public class GetCartListTests
         var cartId = Guid.NewGuid();
         _cartServiceMock
             .Setup(s => s.GetCartListAsync(cartId))
-            .ReturnsAsync(new List<CartDto>());
+            .ReturnsAsync(new CartDto { Id = cartId });
 
         // Act
         await _controller.GetCartList(cartId);

@@ -4,7 +4,7 @@ namespace LayeredArchitecture_Task1_Cart_Service.Repository.CartService.Interfac
 
 public interface ICartRepository
 {
-    public Task<List<Cart>> GetCartListAsync(Guid cartId);
+    public Task<Cart> GetCartListAsync(Guid cartId);
 
     public Task AddToCartAsync(Guid cartId, Item cartItem);
 

@@ -14,18 +14,15 @@ internal class CartRepository(LiteDatabase _database) : ICartRepository
         });
     }
 
-    public async Task<List<Cart>> GetCartListAsync(Guid cartId)
+    public async Task<Cart> GetCartListAsync(Guid cartId)
     {
         return await Task.Run(() =>
         {
             var items = _database.GetCollection<Item>("Items").FindAll().ToList();
-            return new List<Cart>
-            {
-                new() 
-                {
-                    Id = cartId,
-                    CartItems = items
-                }
+
+            return new Cart { 
+                Id = cartId,
+                CartItems = items
             };
         });
     }

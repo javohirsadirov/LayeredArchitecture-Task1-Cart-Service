@@ -21,12 +21,12 @@ internal class CartService(ICartRepository cartRepository) : ICartService
         });
     }
 
-    public async Task<List<CartDto>> GetCartListAsync(Guid cartId)
+    public async Task<CartDto> GetCartListAsync(Guid cartId)
     {
         return await cartRepository.GetCartListAsync(cartId) switch
         {
-            null => new List<CartDto>(),
-            var carts => carts.Select(cart => new CartDto
+            null => new CartDto() { Id = cartId },
+            var cart => new CartDto
             {
                 Id = cart.Id,
                 CartItems = cart.CartItems.Select(item => new ItemDto
@@ -38,7 +38,7 @@ internal class CartService(ICartRepository cartRepository) : ICartService
                     ImageAltText = item.ImageAltText,
                     ImageUrl = item.ImageUrl
                 }).ToList()
-            }).ToList()
+            }
         };
     }
 
