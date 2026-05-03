@@ -2,6 +2,6 @@
 
 public class Cart
 {
-    public required Guid Id { get; set; }
-    public List<Item> CartItems { get; set; } = [];
+    public required string Key { get; set; }
+    public List<Item> Items { get; set; } = [];
 }

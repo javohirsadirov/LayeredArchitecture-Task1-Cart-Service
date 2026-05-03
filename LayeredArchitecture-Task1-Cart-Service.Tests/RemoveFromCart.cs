@@ -1,5 +1,5 @@
 ﻿using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
-using LayeredArchitecture_Task1_Cart_Service.Controllers;
+using LayeredArchitecture_Task1_Cart_Service.Controllers.V1;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -18,51 +18,53 @@ public class RemoveFromCartTests
     }
 
     [Test]
-    public async Task RemoveFromCart_ReturnsOkResult()
+    public async Task DeleteItem_ReturnsOkResult_WhenItemExists()
     {
         // Arrange
-        var cartId = Guid.NewGuid();
-        var itemId = Guid.NewGuid();
+        var key = "cart-1";
+        var itemId = 1;
         _cartServiceMock
-            .Setup(s => s.RemoveFromCartAsync(cartId, itemId))
-            .Returns(Task.CompletedTask);
+            .Setup(s => s.RemoveItemAsync(key, itemId))
+            .ReturnsAsync(true);
 
         // Act
-        var result = await _controller.RemoveFromCart(cartId, itemId);
+        var result = await _controller.DeleteItem(key, itemId);
 
         // Assert
         Assert.That(result, Is.InstanceOf<OkResult>());
     }
 
     [Test]
-    public async Task RemoveFromCart_CallsServiceWithCorrectParameters()
+    public async Task DeleteItem_ReturnsNotFound_WhenItemDoesNotExist()
     {
         // Arrange
-        var cartId = Guid.NewGuid();
-        var itemId = Guid.NewGuid();
+        var key = "cart-1";
+        var itemId = 999;
         _cartServiceMock
-            .Setup(s => s.RemoveFromCartAsync(cartId, itemId))
-            .Returns(Task.CompletedTask);
+            .Setup(s => s.RemoveItemAsync(key, itemId))
+            .ReturnsAsync(false);
 
         // Act
-        await _controller.RemoveFromCart(cartId, itemId);
+        var result = await _controller.DeleteItem(key, itemId);
 
         // Assert
-        _cartServiceMock.Verify(s => s.RemoveFromCartAsync(cartId, itemId), Times.Once);
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
     }
 
     [Test]
-    public void RemoveFromCart_ThrowsException_WhenServiceFails()
+    public async Task DeleteItem_CallsServiceWithCorrectParameters()
     {
         // Arrange
-        var cartId = Guid.NewGuid();
-        var itemId = Guid.NewGuid();
+        var key = "cart-1";
+        var itemId = 1;
         _cartServiceMock
-            .Setup(s => s.RemoveFromCartAsync(cartId, itemId))
-            .ThrowsAsync(new Exception("Service error"));
+            .Setup(s => s.RemoveItemAsync(key, itemId))
+            .ReturnsAsync(true);
 
-        // Act & Assert
-        Assert.ThrowsAsync<Exception>(async () =>
-            await _controller.RemoveFromCart(cartId, itemId));
+        // Act
+        await _controller.DeleteItem(key, itemId);
+
+        // Assert
+        _cartServiceMock.Verify(s => s.RemoveItemAsync(key, itemId), Times.Once);
     }
 }

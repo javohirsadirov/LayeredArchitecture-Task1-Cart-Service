@@ -6,32 +6,30 @@ namespace LayeredArchitecture_Task1_Cart_Service.Repository.CartService.Implemen
 
 internal class CartRepository(LiteDatabase _database) : ICartRepository
 {
-    public async Task AddToCartAsync(Guid cartId, Item cartItem)
+    private ILiteCollection<Item> Items => _database.GetCollection<Item>("Items");
+
+    public Task<Cart?> GetCartAsync(string cartKey)
     {
-        await Task.Run(() =>
-        {
-            _database.GetCollection<Item>("Items").Upsert(cartItem);
-        });
+        var items = Items.Find(i => i.CartKey == cartKey).ToList();
+        if (items.Count == 0)
+            return Task.FromResult<Cart?>(null);
+
+        return Task.FromResult<Cart?>(new Cart { Key = cartKey, Items = items });
     }
 
-    public async Task<Cart> GetCartListAsync(Guid cartId)
+    public Task AddItemAsync(string cartKey, Item item)
     {
-        return await Task.Run(() =>
-        {
-            var items = _database.GetCollection<Item>("Items").FindAll().ToList();
-
-            return new Cart { 
-                Id = cartId,
-                CartItems = items
-            };
-        });
+        item.CartKey = cartKey;
+        Items.Upsert(item);
+        return Task.CompletedTask;
     }
 
-    public async Task RemoveFromCartAsync(Guid cartId, Guid itemId)
+    public Task RemoveItemAsync(string cartKey, int itemId)
     {
-        await Task.Run(() =>
-        {
-            _database.GetCollection<Item>("Items").Delete(itemId);
-        });
+        var item = Items.FindOne(i => i.CartKey == cartKey && i.Id == itemId);
+        if (item is not null)
+            Items.Delete(item.Id);
+
+        return Task.CompletedTask;
     }
 }

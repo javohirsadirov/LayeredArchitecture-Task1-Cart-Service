@@ -2,8 +2,8 @@
 
 public class Item
 {
-    public required Guid Id { get; set; }
-    public required Guid CartId { get; set; }
+    public required int Id { get; set; }
+    public required string CartKey { get; set; }
     public required string Name { get; set; } = string.Empty;
     public string? ImageUrl { get; set; }
     public string? ImageAltText { get; set; }

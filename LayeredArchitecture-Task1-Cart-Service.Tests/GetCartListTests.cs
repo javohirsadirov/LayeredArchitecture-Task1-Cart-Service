@@ -1,5 +1,5 @@
 ﻿using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
-using LayeredArchitecture_Task1_Cart_Service.Controllers;
+using LayeredArchitecture_Task1_Cart_Service.Controllers.V1;
 using LayeredArchitecture_Task1_Cart_Service.Dtos.CartService;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -19,24 +19,21 @@ public class GetCartListTests
     }
 
     [Test]
-    public async Task GetCartList_ReturnsOkResult_WithCartItems()
+    public async Task GetCart_ReturnsOkResult_WithCart()
     {
         // Arrange
-        var cartId = Guid.NewGuid();
+        var key = "cart-1";
         var expectedCart = new CartDto
         {
-            Id = cartId,
-            CartItems =
-            [
-                new ItemDto { Id = Guid.NewGuid(), Name = "Item1", Quantity = 1, Price = 9.99m }
-            ]
+            Key = key,
+            Items = [new ItemDto { Id = 1, Name = "Item1", Quantity = 1, Price = 9.99m }]
         };
         _cartServiceMock
-            .Setup(s => s.GetCartListAsync(cartId))
+            .Setup(s => s.GetCartAsync(key))
             .ReturnsAsync(expectedCart);
 
         // Act
-        var result = await _controller.GetCartList(cartId);
+        var result = await _controller.GetCart(key);
 
         // Assert
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
@@ -45,39 +42,34 @@ public class GetCartListTests
     }
 
     [Test]
-    public async Task GetCartList_ReturnsOkResult_WithEmptyCartItems_WhenCartIsEmpty()
+    public async Task GetCart_ReturnsNotFound_WhenCartDoesNotExist()
     {
         // Arrange
-        var cartId = Guid.NewGuid();
-        var expectedCart = new CartDto { Id = cartId };
+        var key = "nonexistent";
         _cartServiceMock
-            .Setup(s => s.GetCartListAsync(cartId))
-            .ReturnsAsync(expectedCart);
+            .Setup(s => s.GetCartAsync(key))
+            .ReturnsAsync((CartDto?)null);
 
         // Act
-        var result = await _controller.GetCartList(cartId);
+        var result = await _controller.GetCart(key);
 
         // Assert
-        Assert.That(result, Is.InstanceOf<OkObjectResult>());
-        var okResult = (OkObjectResult)result;
-        var cart = okResult.Value as CartDto;
-        Assert.That(cart, Is.Not.Null);
-        Assert.That(cart!.CartItems, Is.Empty);
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
     }
 
     [Test]
-    public async Task GetCartList_CallsServiceWithCorrectCartId()
+    public async Task GetCart_CallsServiceWithCorrectKey()
     {
         // Arrange
-        var cartId = Guid.NewGuid();
+        var key = "cart-1";
         _cartServiceMock
-            .Setup(s => s.GetCartListAsync(cartId))
-            .ReturnsAsync(new CartDto { Id = cartId });
+            .Setup(s => s.GetCartAsync(key))
+            .ReturnsAsync(new CartDto { Key = key });
 
         // Act
-        await _controller.GetCartList(cartId);
+        await _controller.GetCart(key);
 
         // Assert
-        _cartServiceMock.Verify(s => s.GetCartListAsync(cartId), Times.Once);
+        _cartServiceMock.Verify(s => s.GetCartAsync(key), Times.Once);
     }
 }
