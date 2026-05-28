@@ -1,4 +1,5 @@
-﻿using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
+﻿using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Exceptions;
+using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
 using LayeredArchitecture_Task1_Cart_Service.Dtos.CartService;
 using LayeredArchitecture_Task1_Cart_Service.Repository.CartService.Interfaces;
 using LayeredArchitecture_Task1_Cart_Service.Repository.Models;
@@ -30,6 +31,15 @@ internal class CartService(ICartRepository cartRepository) : ICartService
 
     public async Task AddItemAsync(string cartKey, ItemDto item)
     {
+        if (item.Price < 0)
+            throw new ValidationException("Price cannot be negative.");
+
+        if (item.Quantity <= 0)
+            throw new ValidationException("Quantity must be greater than zero.");
+
+        if (string.IsNullOrWhiteSpace(item.Name))
+            throw new ValidationException("Name is required.");
+
         await cartRepository.AddItemAsync(cartKey, new Item
         {
             Id = item.Id,
@@ -42,8 +52,8 @@ internal class CartService(ICartRepository cartRepository) : ICartService
         });
     }
 
-    public async Task RemoveItemAsync(string cartKey, int itemId)
+    public async Task<bool> RemoveItemAsync(string cartKey, int itemId)
     {
-        await cartRepository.RemoveItemAsync(cartKey, itemId);
+        return await cartRepository.RemoveItemAsync(cartKey, itemId);
     }
 }

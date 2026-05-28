@@ -25,7 +25,7 @@ public class RemoveFromCartTests
         var itemId = 1;
         _cartServiceMock
             .Setup(s => s.RemoveItemAsync(key, itemId))
-            .Returns(Task.CompletedTask);
+            .ReturnsAsync(true);
 
         // Act
         var result = await _controller.DeleteItem(key, itemId);
@@ -35,20 +35,20 @@ public class RemoveFromCartTests
     }
 
     [Test]
-    public async Task DeleteItem_ReturnsOk_WhenItemDoesNotExist()
+    public async Task DeleteItem_ReturnsNotFound_WhenItemDoesNotExist()
     {
         // Arrange
         var key = "cart-1";
         var itemId = 999;
         _cartServiceMock
             .Setup(s => s.RemoveItemAsync(key, itemId))
-            .Returns(Task.CompletedTask);
+            .ReturnsAsync(false);
 
         // Act
         var result = await _controller.DeleteItem(key, itemId);
 
         // Assert
-        Assert.That(result, Is.InstanceOf<OkResult>());
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
     }
 
     [Test]
@@ -59,7 +59,7 @@ public class RemoveFromCartTests
         var itemId = 1;
         _cartServiceMock
             .Setup(s => s.RemoveItemAsync(key, itemId))
-            .Returns(Task.CompletedTask);
+            .ReturnsAsync(true);
 
         // Act
         await _controller.DeleteItem(key, itemId);

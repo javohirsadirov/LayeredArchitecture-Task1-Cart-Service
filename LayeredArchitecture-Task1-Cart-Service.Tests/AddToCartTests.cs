@@ -1,4 +1,5 @@
-﻿using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
+﻿using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Exceptions;
+using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
 using LayeredArchitecture_Task1_Cart_Service.Controllers.V1;
 using LayeredArchitecture_Task1_Cart_Service.Dtos.CartService;
 using Microsoft.AspNetCore.Mvc;
@@ -50,6 +51,23 @@ public class AddToCartTests
 
         // Assert
         _cartServiceMock.Verify(s => s.AddItemAsync(key, item), Times.Once);
+    }
+
+    [Test]
+    public async Task AddItem_ReturnsBadRequest_WhenValidationFails()
+    {
+        // Arrange
+        var key = "cart-1";
+        var item = new ItemDto { Id = 1, Name = "Test Item", Quantity = -1, Price = 5.00m };
+        _cartServiceMock
+            .Setup(s => s.AddItemAsync(key, item))
+            .ThrowsAsync(new ValidationException("Quantity must be greater than zero."));
+
+        // Act
+        var result = await _controller.AddItem(key, item);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
 
     [Test]

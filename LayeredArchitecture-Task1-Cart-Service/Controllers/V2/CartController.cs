@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Exceptions;
 using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
 using LayeredArchitecture_Task1_Cart_Service.Dtos.CartService;
 using Microsoft.AspNetCore.Mvc;
@@ -14,12 +15,12 @@ namespace LayeredArchitecture_Task1_Cart_Service.Controllers.V2;
 public class CartController(ICartService cartService) : ControllerBase
 {
     /// <summary>
-    /// Gets cart items by cart key.
+    /// Gets cart items by cart key. Includes HATEOAS links.
     /// </summary>
     /// <param name="key">Cart unique key.</param>
-    /// <returns>List of cart items.</returns>
+    /// <returns>List of cart items with links.</returns>
     [HttpGet("{key}")]
-    [ProducesResponseType(typeof(IEnumerable<ItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCart(string key)
     {
@@ -27,7 +28,23 @@ public class CartController(ICartService cartService) : ControllerBase
         if (cart == null)
             return NotFound();
 
-        return Ok(cart.Items);
+        var links = new List<LinkDto>
+        {
+            new() { Href = Url.Action(nameof(GetCart), new { key })!, Rel = "self", Method = "GET" },
+            new() { Href = Url.Action(nameof(AddItem), new { key })!, Rel = "add-item", Method = "POST" }
+        };
+
+        foreach (var item in cart.Items)
+        {
+            links.Add(new LinkDto
+            {
+                Href = Url.Action(nameof(DeleteItem), new { key, itemId = item.Id })!,
+                Rel = "delete-item",
+                Method = "DELETE"
+            });
+        }
+
+        return Ok(new { Items = cart.Items, Links = links });
     }
 
     /// <summary>
@@ -40,8 +57,15 @@ public class CartController(ICartService cartService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddItem(string key, [FromBody] ItemDto item)
     {
-        await cartService.AddItemAsync(key, item);
-        return Ok();
+        try
+        {
+            await cartService.AddItemAsync(key, item);
+            return Ok();
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     /// <summary>
@@ -51,9 +75,12 @@ public class CartController(ICartService cartService) : ControllerBase
     /// <param name="itemId">Item identifier.</param>
     [HttpDelete("{key}/items/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteItem(string key, int itemId)
     {
-        await cartService.RemoveItemAsync(key, itemId);
+        var removed = await cartService.RemoveItemAsync(key, itemId);
+        if (!removed)
+            return NotFound();
 
         return Ok();
     }

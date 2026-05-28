@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Exceptions;
 using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
 using LayeredArchitecture_Task1_Cart_Service.Dtos.CartService;
 using Microsoft.AspNetCore.Mvc;
@@ -40,8 +41,15 @@ public class CartController(ICartService cartService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddItem(string key, [FromBody] ItemDto item)
     {
-        await cartService.AddItemAsync(key, item);
-        return Ok();
+        try
+        {
+            await cartService.AddItemAsync(key, item);
+            return Ok();
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     /// <summary>
@@ -51,9 +59,12 @@ public class CartController(ICartService cartService) : ControllerBase
     /// <param name="itemId">Item identifier.</param>
     [HttpDelete("{key}/items/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteItem(string key, int itemId)
     {
-        await cartService.RemoveItemAsync(key, itemId);
+        var removed = await cartService.RemoveItemAsync(key, itemId);
+        if (!removed)
+            return NotFound();
 
         return Ok();
     }

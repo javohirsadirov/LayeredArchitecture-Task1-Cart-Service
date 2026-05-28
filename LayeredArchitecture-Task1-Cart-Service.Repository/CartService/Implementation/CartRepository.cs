@@ -24,12 +24,13 @@ internal class CartRepository(LiteDatabase _database) : ICartRepository
         return Task.CompletedTask;
     }
 
-    public Task RemoveItemAsync(string cartKey, int itemId)
+    public Task<bool> RemoveItemAsync(string cartKey, int itemId)
     {
         var item = Items.FindOne(i => i.CartKey == cartKey && i.Id == itemId);
-        if (item is not null)
-            Items.Delete(item.Id);
+        if (item is null)
+            return Task.FromResult(false);
 
-        return Task.CompletedTask;
+        Items.Delete(item.Id);
+        return Task.FromResult(true);
     }
 }

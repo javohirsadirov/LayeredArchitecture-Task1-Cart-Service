@@ -8,5 +8,5 @@ public interface ICartRepository
 
     Task AddItemAsync(string cartKey, Item item);
 
-    Task RemoveItemAsync(string cartKey, int itemId);
+    Task<bool> RemoveItemAsync(string cartKey, int itemId);
 }
