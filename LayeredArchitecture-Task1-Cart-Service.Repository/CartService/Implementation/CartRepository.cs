@@ -33,4 +33,19 @@ internal class CartRepository(LiteDatabase _database) : ICartRepository
         Items.Delete(item.Id);
         return Task.FromResult(true);
     }
+
+    public Task UpdateItemsByProductIdAsync(int productId, string name, decimal price, string? imageUrl, string? imageAltText)
+    {
+        var items = Items.Find(i => i.Id == productId).ToList();
+        foreach (var item in items)
+        {
+            item.Name = name;
+            item.Price = price;
+            item.ImageUrl = imageUrl;
+            item.ImageAltText = imageAltText;
+            Items.Update(item);
+        }
+
+        return Task.CompletedTask;
+    }
 }
