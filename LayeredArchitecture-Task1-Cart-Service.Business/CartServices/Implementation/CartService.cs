@@ -56,4 +56,9 @@ internal class CartService(ICartRepository cartRepository) : ICartService
     {
         return await cartRepository.RemoveItemAsync(cartKey, itemId);
     }
+
+    public async Task UpdateItemsByProductIdAsync(int productId, string name, decimal price, string? imageUrl, string? imageAltText)
+    {
+        await cartRepository.UpdateItemsByProductIdAsync(productId, name, price, imageUrl, imageAltText);
+    }
 }

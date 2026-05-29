@@ -9,4 +9,6 @@ public interface ICartService
     Task AddItemAsync(string cartKey, ItemDto item);
 
     Task<bool> RemoveItemAsync(string cartKey, int itemId);
+
+    Task UpdateItemsByProductIdAsync(int productId, string name, decimal price, string? imageUrl, string? imageAltText);
 }

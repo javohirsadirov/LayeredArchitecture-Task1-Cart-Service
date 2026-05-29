@@ -1,7 +1,7 @@
 using System.Text.Json;
+using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
 using LayeredArchitecture_Task1_CartService.MessageQueue.Interfaces;
 using LayeredArchitecture_Task1_CartService.MessageQueue.Messages;
-using LayeredArchitecture_Task1_Cart_Service.Repository.CartService.Interfaces;
 using LayeredArchitecture_Task2_Catalog_Service.MessageQueue;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,18 +12,18 @@ namespace LayeredArchitecture_Task1_CartService.MessageQueue.Implementation;
 public class ProductUpdatedConsumerService : BackgroundService
 {
     private readonly IMessageConsumer _consumer;
-    private readonly ICartRepository _cartRepository;
+    private readonly ICartService _cartService;
     private readonly RabbitMQOptions _options;
     private readonly ILogger<ProductUpdatedConsumerService> _logger;
 
     public ProductUpdatedConsumerService(
         IMessageConsumer consumer,
-        ICartRepository cartRepository,
+        ICartService cartService,
         IOptions<RabbitMQOptions> options,
         ILogger<ProductUpdatedConsumerService> logger)
     {
         _consumer = consumer;
-        _cartRepository = cartRepository;
+        _cartService = cartService;
         _options = options.Value;
         _logger = logger;
     }
@@ -54,7 +54,7 @@ public class ProductUpdatedConsumerService : BackgroundService
                     _logger.LogInformation("Updating cart items for product {ProductId} with new name '{Name}' and price {Price}.",
                         productUpdated.Id, productUpdated.Name, productUpdated.Price);
 
-                    await _cartRepository.UpdateItemsByProductIdAsync(
+                    await _cartService.UpdateItemsByProductIdAsync(
                         productUpdated.Id,
                         productUpdated.Name,
                         productUpdated.Price,

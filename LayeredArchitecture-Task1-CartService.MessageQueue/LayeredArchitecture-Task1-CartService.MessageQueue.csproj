@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LayeredArchitecture-Task1-Cart-Service.Repository\LayeredArchitecture-Task1-Cart-Service.Repository.csproj" />
+    <ProjectReference Include="..\LayeredArchitecture-Task1-Cart-Service.Business\LayeredArchitecture-Task1-Cart-Service.Business.csproj" />
   </ItemGroup>
 
 </Project>
