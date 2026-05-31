@@ -17,4 +17,8 @@
     <ProjectReference Include="..\LayeredArchitecture-Task1-Cart-Service.Business\LayeredArchitecture-Task1-Cart-Service.Business.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
+  </ItemGroup>
+
 </Project>
