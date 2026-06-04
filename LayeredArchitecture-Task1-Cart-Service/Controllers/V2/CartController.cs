@@ -2,6 +2,7 @@ using Asp.Versioning;
 using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Exceptions;
 using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
 using LayeredArchitecture_Task1_Cart_Service.Dtos.CartService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LayeredArchitecture_Task1_Cart_Service.Controllers.V2;
@@ -10,6 +11,7 @@ namespace LayeredArchitecture_Task1_Cart_Service.Controllers.V2;
 /// Cart operations (API version 2).
 /// </summary>
 [ApiController]
+[Authorize]
 [ApiVersion("2.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class CartController(ICartService cartService) : ControllerBase
@@ -20,6 +22,7 @@ public class CartController(ICartService cartService) : ControllerBase
     /// <param name="key">Cart unique key.</param>
     /// <returns>List of cart items with links.</returns>
     [HttpGet("{key}")]
+    [Authorize(Roles = "Manager,Customer")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCart(string key)
@@ -53,6 +56,7 @@ public class CartController(ICartService cartService) : ControllerBase
     /// <param name="key">Cart unique key.</param>
     /// <param name="item">Cart item to add.</param>
     [HttpPost("{key}/items")]
+    [Authorize(Roles = "Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddItem(string key, [FromBody] ItemDto item)
@@ -74,6 +78,7 @@ public class CartController(ICartService cartService) : ControllerBase
     /// <param name="key">Cart unique key.</param>
     /// <param name="itemId">Item identifier.</param>
     [HttpDelete("{key}/items/{itemId}")]
+    [Authorize(Roles = "Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteItem(string key, int itemId)
