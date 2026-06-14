@@ -13,8 +13,8 @@ namespace LayeredArchitectureTask1CartService.Tests;
 /// </summary>
 public class GetCartListTests
 {
-    private Mock<ICartService> cartServiceMock;
-    private CartController controller;
+    private Mock<ICartService> cartServiceMock = null!;
+    private CartController controller = null!;
 
     /// <summary>
     /// Initializes mocks and the controller before each test.
