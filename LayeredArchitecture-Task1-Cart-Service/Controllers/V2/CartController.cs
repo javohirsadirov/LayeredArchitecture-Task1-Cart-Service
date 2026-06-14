@@ -1,11 +1,13 @@
+// Copyright (c) LayeredArchitecture-Task1-Cart-Service. All rights reserved.
+
 using Asp.Versioning;
-using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Exceptions;
-using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
-using LayeredArchitecture_Task1_Cart_Service.Dtos.CartService;
+using LayeredArchitectureTask1CartService.Business.CartServices.Exceptions;
+using LayeredArchitectureTask1CartService.Business.CartServices.Interfaces;
+using LayeredArchitectureTask1CartService.Dtos.CartService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LayeredArchitecture_Task1_Cart_Service.Controllers.V2;
+namespace LayeredArchitectureTask1CartService.Controllers.V2;
 
 /// <summary>
 /// Cart operations (API version 2).
@@ -29,25 +31,27 @@ public class CartController(ICartService cartService) : ControllerBase
     {
         var cart = await cartService.GetCartAsync(key);
         if (cart == null)
-            return NotFound();
+        {
+            return this.NotFound();
+        }
 
         var links = new List<LinkDto>
         {
-            new() { Href = Url.Action(nameof(GetCart), new { key })!, Rel = "self", Method = "GET" },
-            new() { Href = Url.Action(nameof(AddItem), new { key })!, Rel = "add-item", Method = "POST" }
+            new() { Href = this.Url.Action(nameof(this.GetCart), new { key })!, Rel = "self", Method = "GET" },
+            new() { Href = this.Url.Action(nameof(this.AddItem), new { key })!, Rel = "add-item", Method = "POST" },
         };
 
         foreach (var item in cart.Items)
         {
             links.Add(new LinkDto
             {
-                Href = Url.Action(nameof(DeleteItem), new { key, itemId = item.Id })!,
+                Href = this.Url.Action(nameof(this.DeleteItem), new { key, itemId = item.Id })!,
                 Rel = "delete-item",
-                Method = "DELETE"
+                Method = "DELETE",
             });
         }
 
-        return Ok(new { Items = cart.Items, Links = links });
+        return this.Ok(new { cart.Items, Links = links });
     }
 
     /// <summary>
@@ -55,6 +59,7 @@ public class CartController(ICartService cartService) : ControllerBase
     /// </summary>
     /// <param name="key">Cart unique key.</param>
     /// <param name="item">Cart item to add.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [HttpPost("{key}/items")]
     [Authorize(Roles = "Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -64,11 +69,11 @@ public class CartController(ICartService cartService) : ControllerBase
         try
         {
             await cartService.AddItemAsync(key, item);
-            return Ok();
+            return this.Ok();
         }
         catch (ValidationException ex)
         {
-            return BadRequest(new { error = ex.Message });
+            return this.BadRequest(new { error = ex.Message });
         }
     }
 
@@ -77,6 +82,7 @@ public class CartController(ICartService cartService) : ControllerBase
     /// </summary>
     /// <param name="key">Cart unique key.</param>
     /// <param name="itemId">Item identifier.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [HttpDelete("{key}/items/{itemId}")]
     [Authorize(Roles = "Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -85,8 +91,10 @@ public class CartController(ICartService cartService) : ControllerBase
     {
         var removed = await cartService.RemoveItemAsync(key, itemId);
         if (!removed)
-            return NotFound();
+        {
+            return this.NotFound();
+        }
 
-        return Ok();
+        return this.Ok();
     }
 }

@@ -1,14 +1,16 @@
-﻿using Asp.Versioning;
-using LayeredArchitecture_Task1_Cart_Service.Business;
-using LayeredArchitecture_Task1_Cart_Service.Middlewares;
-using LayeredArchitecture_Task1_Cart_Service.Repository;
-using LayeredArchitecture_Task1_Cart_Service.Swagger;
-using LayeredArchitecture_Task2_Catalog_Service.MessageQueue;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.OpenApi.Models;
+// Copyright (c) LayeredArchitecture-Task1-Cart-Service. All rights reserved.
+
 using System.Reflection;
 using System.Security.Claims;
 using System.Text.Json;
+using Asp.Versioning;
+using LayeredArchitectureTask1CartService.Business;
+using LayeredArchitectureTask1CartService.MessageQueue;
+using LayeredArchitectureTask1CartService.Middlewares;
+using LayeredArchitectureTask1CartService.Repository;
+using LayeredArchitectureTask1CartService.Swagger;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,16 +37,17 @@ builder.Services.AddRepositoryServices();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Cart API", Version = "v1" });
-    options.SwaggerDoc("v2", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Cart API", Version = "v2" });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Cart API", Version = "v1" });
+    options.SwaggerDoc("v2", new OpenApiInfo { Title = "Cart API", Version = "v2" });
 
     options.OperationFilter<SwaggerDefaultValues>();
 
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     if (File.Exists(xmlPath))
+    {
         options.IncludeXmlComments(xmlPath);
-
+    }
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -53,7 +56,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Enter token: Bearer {your token}"
+        Description = "Enter token: Bearer {your token}",
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -64,11 +67,11 @@ builder.Services.AddSwaggerGen(options =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
+                    Id = "Bearer",
+                },
             },
-            new string[] {}
-        }
+            Array.Empty<string>()
+        },
     });
 });
 
@@ -81,18 +84,18 @@ builder.Services.AddAuthentication("Bearer")
 
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
         {
-            ValidateAudience = false // for Keycloak
+            ValidateAudience = false, // for Keycloak
         };
 
         options.Events = new JwtBearerEvents
         {
             OnTokenValidated = context =>
             {
-                var identity = context.Principal.Identity as ClaimsIdentity;
+                var identity = context.Principal?.Identity as ClaimsIdentity;
 
-                var realmAccess = context.Principal.FindFirst("realm_access")?.Value;
+                var realmAccess = context.Principal?.FindFirst("realm_access")?.Value;
 
-                if (realmAccess != null)
+                if (realmAccess != null && identity != null)
                 {
                     var roles = JsonDocument.Parse(realmAccess)
                         .RootElement
@@ -100,14 +103,17 @@ builder.Services.AddAuthentication("Bearer")
 
                     foreach (var role in roles.EnumerateArray())
                     {
-                        identity.AddClaim(new Claim(ClaimTypes.Role, role.GetString()));
+                        var roleValue = role.GetString();
+                        if (roleValue != null)
+                        {
+                            identity.AddClaim(new Claim(ClaimTypes.Role, roleValue));
+                        }
                     }
                 }
 
                 return Task.CompletedTask;
-            }
+            },
         };
-
     });
 
 var app = builder.Build();

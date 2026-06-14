@@ -1,11 +1,13 @@
+// Copyright (c) LayeredArchitecture-Task1-Cart-Service. All rights reserved.
+
 using Asp.Versioning;
-using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Exceptions;
-using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
-using LayeredArchitecture_Task1_Cart_Service.Dtos.CartService;
+using LayeredArchitectureTask1CartService.Business.CartServices.Exceptions;
+using LayeredArchitectureTask1CartService.Business.CartServices.Interfaces;
+using LayeredArchitectureTask1CartService.Dtos.CartService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LayeredArchitecture_Task1_Cart_Service.Controllers.V1;
+namespace LayeredArchitectureTask1CartService.Controllers.V1;
 
 /// <summary>
 /// Cart operations (API version 1).
@@ -29,9 +31,11 @@ public class CartController(ICartService cartService) : ControllerBase
     {
         var cart = await cartService.GetCartAsync(key);
         if (cart == null)
-            return NotFound();
+        {
+            return this.NotFound();
+        }
 
-        return Ok(cart);
+        return this.Ok(cart);
     }
 
     /// <summary>
@@ -39,20 +43,21 @@ public class CartController(ICartService cartService) : ControllerBase
     /// </summary>
     /// <param name="key">Cart unique key.</param>
     /// <param name="item">Cart item to add.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [HttpPost("{key}/items")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Roles = "Manager")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddItem(string key, [FromBody] ItemDto item)
     {
         try
         {
             await cartService.AddItemAsync(key, item);
-            return Ok();
+            return this.Ok();
         }
         catch (ValidationException ex)
         {
-            return BadRequest(new { error = ex.Message });
+            return this.BadRequest(new { error = ex.Message });
         }
     }
 
@@ -61,16 +66,19 @@ public class CartController(ICartService cartService) : ControllerBase
     /// </summary>
     /// <param name="key">Cart unique key.</param>
     /// <param name="itemId">Item identifier.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [HttpDelete("{key}/items/{itemId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Roles = "Manager")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteItem(string key, int itemId)
     {
         var removed = await cartService.RemoveItemAsync(key, itemId);
         if (!removed)
-            return NotFound();
+        {
+            return this.NotFound();
+        }
 
-        return Ok();
+        return this.Ok();
     }
 }

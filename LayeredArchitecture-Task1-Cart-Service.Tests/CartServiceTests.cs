@@ -1,103 +1,138 @@
-using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Exceptions;
-using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Implementation;
-using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
-using LayeredArchitecture_Task1_Cart_Service.Dtos.CartService;
-using LayeredArchitecture_Task1_Cart_Service.Repository.CartService.Interfaces;
-using LayeredArchitecture_Task1_Cart_Service.Repository.Models;
+// Copyright (c) LayeredArchitecture-Task1-Cart-Service. All rights reserved.
+
+using LayeredArchitectureTask1CartService.Business.CartServices.Exceptions;
+using LayeredArchitectureTask1CartService.Business.CartServices.Implementation;
+using LayeredArchitectureTask1CartService.Dtos.CartService;
+using LayeredArchitectureTask1CartService.Repository.CartService.Interfaces;
+using LayeredArchitectureTask1CartService.Repository.Models;
 using Moq;
 
-namespace LayeredArchitecture_Task1_Cart_Service.Tests;
+namespace LayeredArchitectureTask1CartService.Tests;
 
+/// <summary>
+/// Unit tests for the CartService business logic.
+/// </summary>
 public class CartServiceTests
 {
-    private Mock<ICartRepository> _cartRepositoryMock;
-    private ICartService _cartService;
+    private Mock<ICartRepository> cartRepositoryMock;
+    private CartService cartService;
 
+    /// <summary>
+    /// Initializes mocks and the CartService instance before each test.
+    /// </summary>
     [SetUp]
     public void Setup()
     {
-        _cartRepositoryMock = new Mock<ICartRepository>();
-        _cartService = new CartService(_cartRepositoryMock.Object);
+        this.cartRepositoryMock = new Mock<ICartRepository>();
+        this.cartService = new CartService(this.cartRepositoryMock.Object);
     }
 
+    /// <summary>
+    /// Verifies that adding an item with a negative price throws a ValidationException.
+    /// </summary>
     [Test]
-    public async Task AddItemAsync_ThrowsValidationException_WhenPriceIsNegative()
+    public void AddItemAsyncThrowsValidationExceptionWhenPriceIsNegative()
     {
         var item = new ItemDto { Id = 1, Name = "Item", Quantity = 1, Price = -5m };
 
         Assert.ThrowsAsync<ValidationException>(async () =>
-            await _cartService.AddItemAsync("cart-1", item));
+            await this.cartService.AddItemAsync("cart-1", item));
     }
 
+    /// <summary>
+    /// Verifies that adding an item with zero quantity throws a ValidationException.
+    /// </summary>
     [Test]
-    public async Task AddItemAsync_ThrowsValidationException_WhenQuantityIsZero()
+    public void AddItemAsyncThrowsValidationExceptionWhenQuantityIsZero()
     {
         var item = new ItemDto { Id = 1, Name = "Item", Quantity = 0, Price = 10m };
 
         Assert.ThrowsAsync<ValidationException>(async () =>
-            await _cartService.AddItemAsync("cart-1", item));
+            await this.cartService.AddItemAsync("cart-1", item));
     }
 
+    /// <summary>
+    /// Verifies that adding an item with an empty name throws a ValidationException.
+    /// </summary>
     [Test]
-    public async Task AddItemAsync_ThrowsValidationException_WhenNameIsEmpty()
+    public void AddItemAsyncThrowsValidationExceptionWhenNameIsEmpty()
     {
         var item = new ItemDto { Id = 1, Name = "  ", Quantity = 1, Price = 10m };
 
         Assert.ThrowsAsync<ValidationException>(async () =>
-            await _cartService.AddItemAsync("cart-1", item));
+            await this.cartService.AddItemAsync("cart-1", item));
     }
 
+    /// <summary>
+    /// Verifies that adding a valid item calls the repository correctly.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test.</returns>
     [Test]
-    public async Task AddItemAsync_CallsRepository_WhenValid()
+    public async Task AddItemAsyncCallsRepositoryWhenValid()
     {
         var item = new ItemDto { Id = 1, Name = "Valid Item", Quantity = 2, Price = 10m };
-        _cartRepositoryMock
+        this.cartRepositoryMock
             .Setup(r => r.AddItemAsync("cart-1", It.IsAny<Item>()))
             .Returns(Task.CompletedTask);
 
-        await _cartService.AddItemAsync("cart-1", item);
+        await this.cartService.AddItemAsync("cart-1", item);
 
-        _cartRepositoryMock.Verify(r => r.AddItemAsync("cart-1", It.Is<Item>(i =>
-            i.Id == 1 && i.Name == "Valid Item" && i.Quantity == 2 && i.Price == 10m)), Times.Once);
+        this.cartRepositoryMock.Verify(
+            r => r.AddItemAsync(
+                "cart-1",
+                It.Is<Item>(i => i.Id == 1 && i.Name == "Valid Item" && i.Quantity == 2 && i.Price == 10m)),
+            Times.Once);
     }
 
+    /// <summary>
+    /// Verifies that UpdateItemsByProductIdAsync calls the repository.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test.</returns>
     [Test]
-    public async Task UpdateItemsByProductIdAsync_CallsRepository()
+    public async Task UpdateItemsByProductIdAsyncCallsRepository()
     {
-        _cartRepositoryMock
+        this.cartRepositoryMock
             .Setup(r => r.UpdateItemsByProductIdAsync(1, "Updated", 20m, "http://img.png", "alt"))
             .Returns(Task.CompletedTask);
 
-        await _cartService.UpdateItemsByProductIdAsync(1, "Updated", 20m, "http://img.png", "alt");
+        await this.cartService.UpdateItemsByProductIdAsync(1, "Updated", 20m, "http://img.png", "alt");
 
-        _cartRepositoryMock.Verify(r => r.UpdateItemsByProductIdAsync(1, "Updated", 20m, "http://img.png", "alt"), Times.Once);
+        this.cartRepositoryMock.Verify(r => r.UpdateItemsByProductIdAsync(1, "Updated", 20m, "http://img.png", "alt"), Times.Once);
     }
 
+    /// <summary>
+    /// Verifies that GetCartAsync returns null when the cart does not exist.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test.</returns>
     [Test]
-    public async Task GetCartAsync_ReturnsNull_WhenCartDoesNotExist()
+    public async Task GetCartAsyncReturnsNullWhenCartDoesNotExist()
     {
-        _cartRepositoryMock
+        this.cartRepositoryMock
             .Setup(r => r.GetCartAsync("nonexistent"))
             .ReturnsAsync((Cart?)null);
 
-        var result = await _cartService.GetCartAsync("nonexistent");
+        var result = await this.cartService.GetCartAsync("nonexistent");
 
         Assert.That(result, Is.Null);
     }
 
+    /// <summary>
+    /// Verifies that GetCartAsync returns a CartDto when the cart exists.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test.</returns>
     [Test]
-    public async Task GetCartAsync_ReturnsCartDto_WhenCartExists()
+    public async Task GetCartAsyncReturnsCartDtoWhenCartExists()
     {
         var cart = new Cart
         {
             Key = "cart-1",
-            Items = [new Item { Id = 1, CartKey = "cart-1", Name = "Item1", Quantity = 1, Price = 5m }]
+            Items = [new Item { Id = 1, CartKey = "cart-1", Name = "Item1", Quantity = 1, Price = 5m }],
         };
-        _cartRepositoryMock
+        this.cartRepositoryMock
             .Setup(r => r.GetCartAsync("cart-1"))
             .ReturnsAsync(cart);
 
-        var result = await _cartService.GetCartAsync("cart-1");
+        var result = await this.cartService.GetCartAsync("cart-1");
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Key, Is.EqualTo("cart-1"));
@@ -105,26 +140,34 @@ public class CartServiceTests
         Assert.That(result.Items[0].Name, Is.EqualTo("Item1"));
     }
 
+    /// <summary>
+    /// Verifies that RemoveItemAsync returns true when the repository returns true.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test.</returns>
     [Test]
-    public async Task RemoveItemAsync_ReturnsTrue_WhenRepositoryReturnsTrue()
+    public async Task RemoveItemAsyncReturnsTrueWhenRepositoryReturnsTrue()
     {
-        _cartRepositoryMock
+        this.cartRepositoryMock
             .Setup(r => r.RemoveItemAsync("cart-1", 1))
             .ReturnsAsync(true);
 
-        var result = await _cartService.RemoveItemAsync("cart-1", 1);
+        var result = await this.cartService.RemoveItemAsync("cart-1", 1);
 
         Assert.That(result, Is.True);
     }
 
+    /// <summary>
+    /// Verifies that RemoveItemAsync returns false when the repository returns false.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test.</returns>
     [Test]
-    public async Task RemoveItemAsync_ReturnsFalse_WhenRepositoryReturnsFalse()
+    public async Task RemoveItemAsyncReturnsFalseWhenRepositoryReturnsFalse()
     {
-        _cartRepositoryMock
+        this.cartRepositoryMock
             .Setup(r => r.RemoveItemAsync("cart-1", 999))
             .ReturnsAsync(false);
 
-        var result = await _cartService.RemoveItemAsync("cart-1", 999);
+        var result = await this.cartService.RemoveItemAsync("cart-1", 999);
 
         Assert.That(result, Is.False);
     }

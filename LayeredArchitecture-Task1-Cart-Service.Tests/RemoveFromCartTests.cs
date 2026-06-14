@@ -1,70 +1,81 @@
-﻿using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
-using LayeredArchitecture_Task1_Cart_Service.Controllers.V1;
+// Copyright (c) LayeredArchitecture-Task1-Cart-Service. All rights reserved.
+
+using LayeredArchitectureTask1CartService.Business.CartServices.Interfaces;
+using LayeredArchitectureTask1CartService.Controllers.V1;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
-namespace LayeredArchitecture_Task1_Cart_Service.Tests;
+namespace LayeredArchitectureTask1CartService.Tests;
 
+/// <summary>
+/// Unit tests for the delete-item controller action.
+/// </summary>
 public class RemoveFromCartTests
 {
-    private Mock<ICartService> _cartServiceMock;
-    private CartController _controller;
+    private Mock<ICartService> cartServiceMock;
+    private CartController controller;
 
+    /// <summary>
+    /// Initializes mocks and the controller before each test.
+    /// </summary>
     [SetUp]
     public void Setup()
     {
-        _cartServiceMock = new Mock<ICartService>();
-        _controller = new CartController(_cartServiceMock.Object);
+        this.cartServiceMock = new Mock<ICartService>();
+        this.controller = new CartController(this.cartServiceMock.Object);
     }
 
+    /// <summary>
+    /// Verifies that DeleteItem returns Ok when the item exists.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test.</returns>
     [Test]
-    public async Task DeleteItem_ReturnsOk_WhenItemExists()
+    public async Task DeleteItemReturnsOkWhenItemExists()
     {
-        // Arrange
         var key = "cart-1";
         var itemId = 1;
-        _cartServiceMock
+        this.cartServiceMock
             .Setup(s => s.RemoveItemAsync(key, itemId))
             .ReturnsAsync(true);
 
-        // Act
-        var result = await _controller.DeleteItem(key, itemId);
+        var result = await this.controller.DeleteItem(key, itemId);
 
-        // Assert
         Assert.That(result, Is.InstanceOf<OkResult>());
     }
 
+    /// <summary>
+    /// Verifies that DeleteItem returns NotFound when the item does not exist.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test.</returns>
     [Test]
-    public async Task DeleteItem_ReturnsNotFound_WhenItemDoesNotExist()
+    public async Task DeleteItemReturnsNotFoundWhenItemDoesNotExist()
     {
-        // Arrange
         var key = "cart-1";
         var itemId = 999;
-        _cartServiceMock
+        this.cartServiceMock
             .Setup(s => s.RemoveItemAsync(key, itemId))
             .ReturnsAsync(false);
 
-        // Act
-        var result = await _controller.DeleteItem(key, itemId);
+        var result = await this.controller.DeleteItem(key, itemId);
 
-        // Assert
         Assert.That(result, Is.InstanceOf<NotFoundResult>());
     }
 
+    /// <summary>
+    /// Verifies that DeleteItem calls the service with the correct parameters.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test.</returns>
     [Test]
-    public async Task DeleteItem_CallsServiceWithCorrectParameters()
+    public async Task DeleteItemCallsServiceWithCorrectParameters()
     {
-        // Arrange
         var key = "cart-1";
         var itemId = 1;
-        _cartServiceMock
+        this.cartServiceMock
             .Setup(s => s.RemoveItemAsync(key, itemId))
             .ReturnsAsync(true);
 
-        // Act
-        await _controller.DeleteItem(key, itemId);
+        await this.controller.DeleteItem(key, itemId);
 
-        // Assert
-        _cartServiceMock.Verify(s => s.RemoveItemAsync(key, itemId), Times.Once);
+        this.cartServiceMock.Verify(s => s.RemoveItemAsync(key, itemId), Times.Once);
     }
 }

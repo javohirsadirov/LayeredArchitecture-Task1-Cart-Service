@@ -1,49 +1,62 @@
-﻿using LayeredArchitecture_Task1_Cart_Service.Repository.CartService.Interfaces;
-using LayeredArchitecture_Task1_Cart_Service.Repository.Models;
+// Copyright (c) LayeredArchitecture-Task1-Cart-Service. All rights reserved.
+
+using LayeredArchitectureTask1CartService.Repository.CartService.Interfaces;
+using LayeredArchitectureTask1CartService.Repository.Models;
 using LiteDB;
 
-namespace LayeredArchitecture_Task1_Cart_Service.Repository.CartService.Implementation;
+namespace LayeredArchitectureTask1CartService.Repository.CartService.Implementation;
 
-internal class CartRepository(LiteDatabase _database) : ICartRepository
+/// <summary>
+/// Repository implementation for cart operations using LiteDB.
+/// </summary>
+internal sealed class CartRepository(LiteDatabase database) : ICartRepository
 {
-    private ILiteCollection<Item> Items => _database.GetCollection<Item>("Items");
+    private ILiteCollection<Item> Items => database.GetCollection<Item>("Items");
 
+    /// <inheritdoc/>
     public Task<Cart?> GetCartAsync(string cartKey)
     {
-        var items = Items.Find(i => i.CartKey == cartKey).ToList();
+        var items = this.Items.Find(i => i.CartKey == cartKey).ToList();
         if (items.Count == 0)
+        {
             return Task.FromResult<Cart?>(null);
+        }
 
         return Task.FromResult<Cart?>(new Cart { Key = cartKey, Items = items });
     }
 
+    /// <inheritdoc/>
     public Task AddItemAsync(string cartKey, Item item)
     {
         item.CartKey = cartKey;
-        Items.Upsert(item);
+        this.Items.Upsert(item);
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc/>
     public Task<bool> RemoveItemAsync(string cartKey, int itemId)
     {
-        var item = Items.FindOne(i => i.CartKey == cartKey && i.Id == itemId);
+        var item = this.Items.FindOne(i => i.CartKey == cartKey && i.Id == itemId);
         if (item is null)
+        {
             return Task.FromResult(false);
+        }
 
-        Items.Delete(item.Id);
+        this.Items.Delete(item.Id);
         return Task.FromResult(true);
     }
 
+    /// <inheritdoc/>
     public Task UpdateItemsByProductIdAsync(int productId, string name, decimal price, string? imageUrl, string? imageAltText)
     {
-        var items = Items.Find(i => i.Id == productId).ToList();
+        var items = this.Items.Find(i => i.Id == productId).ToList();
         foreach (var item in items)
         {
             item.Name = name;
             item.Price = price;
             item.ImageUrl = imageUrl;
             item.ImageAltText = imageAltText;
-            Items.Update(item);
+            this.Items.Update(item);
         }
 
         return Task.CompletedTask;

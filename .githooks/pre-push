@@ -1,0 +1,18 @@
+#!/bin/sh
+# Pre-push hook: validates code formatting using dotnet-format
+# To install: git config core.hooksPath .githooks
+
+echo "Running dotnet format --verify-no-changes..."
+
+dotnet format --verify-no-changes
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "ERROR: Code style violations detected."
+    echo "Run 'dotnet format' to fix formatting issues before pushing."
+    echo ""
+    exit 1
+fi
+
+echo "Code style check passed."
+exit 0

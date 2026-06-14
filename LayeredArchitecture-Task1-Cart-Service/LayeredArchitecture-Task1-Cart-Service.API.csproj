@@ -4,9 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>LayeredArchitecture_Task1_Cart_Service</RootNamespace>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);1591</NoWarn>
+    <RootNamespace>LayeredArchitectureTask1CartService</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

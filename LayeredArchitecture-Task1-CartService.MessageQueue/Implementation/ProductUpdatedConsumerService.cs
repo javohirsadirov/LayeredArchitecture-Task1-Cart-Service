@@ -1,100 +1,128 @@
-using System.Text.Json;
+// Copyright (c) LayeredArchitecture-Task1-Cart-Service. All rights reserved.
+
 using System.Text;
 using System.Text.Json;
-using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
-using LayeredArchitecture_Task1_CartService.MessageQueue.Messages;
-using LayeredArchitecture_Task2_Catalog_Service.MessageQueue;
+using LayeredArchitectureTask1CartService.Business.CartServices.Interfaces;
+using LayeredArchitectureTask1CartService.MessageQueue.Messages;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace LayeredArchitecture_Task1_CartService.MessageQueue.Implementation;
+namespace LayeredArchitectureTask1CartService.MessageQueue.Implementation;
 
-public class ProductUpdatedConsumerService : BackgroundService
+/// <summary>
+/// Background service that listens for product update messages from RabbitMQ
+/// and updates the cart items accordingly.
+/// </summary>
+public partial class ProductUpdatedConsumerService : BackgroundService
 {
-    private readonly ICartService _cartService;
-    private readonly RabbitMQOptions _options;
-    private readonly ILogger<ProductUpdatedConsumerService> _logger;
+    private readonly ICartService cartService;
+    private readonly RabbitMQOptions rabbitMQOptions;
+    private readonly ILogger<ProductUpdatedConsumerService> logger;
 
-    private IConnection? _connection;
-    private IChannel? _channel;
+    private IConnection? connection;
+    private IChannel? channel;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProductUpdatedConsumerService"/> class.
+    /// </summary>
+    /// <param name="cartService">The cart service.</param>
+    /// <param name="rabbitMQOptions">The RabbitMQ options.</param>
+    /// <param name="logger">The logger.</param>
     public ProductUpdatedConsumerService(
         ICartService cartService,
-        IOptions<RabbitMQOptions> options,
+        IOptions<RabbitMQOptions> rabbitMQOptions,
         ILogger<ProductUpdatedConsumerService> logger)
     {
-        _cartService = cartService;
-        _options = options.Value;
-        _logger = logger;
+        this.cartService = cartService;
+        this.rabbitMQOptions = rabbitMQOptions.Value;
+        this.logger = logger;
     }
 
+    /// <inheritdoc/>
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        if (this.channel is not null)
+        {
+            await this.channel.CloseAsync(cancellationToken);
+        }
+
+        if (this.connection is not null)
+        {
+            await this.connection.CloseAsync(cancellationToken);
+        }
+
+        await base.StopAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var settings = _options.ProductUpdated;
+        var settings = this.rabbitMQOptions.ProductUpdated;
 
         var factory = new ConnectionFactory
         {
-            HostName = _options.HostName,
-            Port = _options.Port
+            HostName = this.rabbitMQOptions.HostName,
+            Port = this.rabbitMQOptions.Port,
         };
 
-        _connection = await factory.CreateConnectionAsync(stoppingToken);
-        _channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
+        this.connection = await factory.CreateConnectionAsync(stoppingToken);
+        this.channel = await this.connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
-        await _channel.ExchangeDeclareAsync(settings.Exchange, ExchangeType.Direct, durable: true, cancellationToken: stoppingToken);
-        await _channel.QueueDeclareAsync(settings.Queue, durable: true, exclusive: false, autoDelete: false, cancellationToken: stoppingToken);
-        await _channel.QueueBindAsync(settings.Queue, settings.Exchange, settings.RoutingKey, cancellationToken: stoppingToken);
+        await this.channel.ExchangeDeclareAsync(settings.Exchange, ExchangeType.Direct, durable: true, cancellationToken: stoppingToken);
+        await this.channel.QueueDeclareAsync(settings.Queue, durable: true, exclusive: false, autoDelete: false, cancellationToken: stoppingToken);
+        await this.channel.QueueBindAsync(settings.Queue, settings.Exchange, settings.RoutingKey, cancellationToken: stoppingToken);
 
-        var consumer = new AsyncEventingBasicConsumer(_channel);
+        var consumer = new AsyncEventingBasicConsumer(this.channel);
+
+        var jsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+        };
+
         consumer.ReceivedAsync += async (_, ea) =>
         {
             var body = Encoding.UTF8.GetString(ea.Body.ToArray());
             try
             {
-                var productUpdated = JsonSerializer.Deserialize<ProductUpdatedMessage>(body, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var productUpdated = JsonSerializer.Deserialize<ProductUpdatedMessage>(body, jsonSerializerOptions);
 
                 if (productUpdated is null)
                 {
-                    _logger.LogWarning("Received null or invalid product updated message.");
-                    await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false, stoppingToken);
+                    LogReceivedNullMessage(this.logger);
+                    await this.channel.BasicAckAsync(ea.DeliveryTag, multiple: false, stoppingToken);
                     return;
                 }
 
-                _logger.LogInformation("Updating cart items for product {ProductId} with new name '{Name}' and price {Price}.",
-                    productUpdated.Id, productUpdated.Name, productUpdated.Price);
+                LogUpdatingCartItems(this.logger, productUpdated.Id, productUpdated.Name, productUpdated.Price);
 
-                await _cartService.UpdateItemsByProductIdAsync(
+                await this.cartService.UpdateItemsByProductIdAsync(
                     productUpdated.Id,
                     productUpdated.Name,
                     productUpdated.Price,
                     productUpdated.ImageUrl,
                     productUpdated.ImageAltText);
 
-                await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false, stoppingToken);
+                await this.channel.BasicAckAsync(ea.DeliveryTag, multiple: false, stoppingToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing product updated message: {Message}", body);
-                await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true, cancellationToken: stoppingToken);
+                LogProcessingError(this.logger, ex, body);
+                await this.channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true, cancellationToken: stoppingToken);
             }
         };
 
-        await _channel.BasicConsumeAsync(settings.Queue, autoAck: false, consumer: consumer, cancellationToken: stoppingToken);
+        await this.channel.BasicConsumeAsync(settings.Queue, autoAck: false, consumer: consumer, cancellationToken: stoppingToken);
     }
 
-    public override async Task StopAsync(CancellationToken cancellationToken)
-    {
-        if (_channel is not null)
-            await _channel.CloseAsync();
-        if (_connection is not null)
-            await _connection.CloseAsync();
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Received null or invalid product updated message.")]
+    private static partial void LogReceivedNullMessage(ILogger logger);
 
-        await base.StopAsync(cancellationToken);
-    }
+    [LoggerMessage(Level = LogLevel.Information, Message = "Updating cart items for product {ProductId} with new name '{Name}' and price {Price}.")]
+    private static partial void LogUpdatingCartItems(ILogger logger, int productId, string name, decimal price);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Error processing product updated message: {Body}")]
+    private static partial void LogProcessingError(ILogger logger, Exception ex, string body);
 }

@@ -1,75 +1,86 @@
-﻿using LayeredArchitecture_Task1_Cart_Service.Business.CartServices.Interfaces;
-using LayeredArchitecture_Task1_Cart_Service.Controllers.V1;
-using LayeredArchitecture_Task1_Cart_Service.Dtos.CartService;
+// Copyright (c) LayeredArchitecture-Task1-Cart-Service. All rights reserved.
+
+using LayeredArchitectureTask1CartService.Business.CartServices.Interfaces;
+using LayeredArchitectureTask1CartService.Controllers.V1;
+using LayeredArchitectureTask1CartService.Dtos.CartService;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
-namespace LayeredArchitecture_Task1_Cart_Service.Tests;
+namespace LayeredArchitectureTask1CartService.Tests;
 
+/// <summary>
+/// Unit tests for the get-cart controller action.
+/// </summary>
 public class GetCartListTests
 {
-    private Mock<ICartService> _cartServiceMock;
-    private CartController _controller;
+    private Mock<ICartService> cartServiceMock;
+    private CartController controller;
 
+    /// <summary>
+    /// Initializes mocks and the controller before each test.
+    /// </summary>
     [SetUp]
     public void Setup()
     {
-        _cartServiceMock = new Mock<ICartService>();
-        _controller = new CartController(_cartServiceMock.Object);
+        this.cartServiceMock = new Mock<ICartService>();
+        this.controller = new CartController(this.cartServiceMock.Object);
     }
 
+    /// <summary>
+    /// Verifies that GetCart returns an OkObjectResult with the cart.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test.</returns>
     [Test]
-    public async Task GetCart_ReturnsOkResult_WithCart()
+    public async Task GetCartReturnsOkResultWithCart()
     {
-        // Arrange
         var key = "cart-1";
         var expectedCart = new CartDto
         {
             Key = key,
-            Items = [new ItemDto { Id = 1, Name = "Item1", Quantity = 1, Price = 9.99m }]
+            Items = [new ItemDto { Id = 1, Name = "Item1", Quantity = 1, Price = 9.99m }],
         };
-        _cartServiceMock
+        this.cartServiceMock
             .Setup(s => s.GetCartAsync(key))
             .ReturnsAsync(expectedCart);
 
-        // Act
-        var result = await _controller.GetCart(key);
+        var result = await this.controller.GetCart(key);
 
-        // Assert
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
         var okResult = (OkObjectResult)result;
         Assert.That(okResult.Value, Is.EqualTo(expectedCart));
     }
 
+    /// <summary>
+    /// Verifies that GetCart returns NotFound when the cart does not exist.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test.</returns>
     [Test]
-    public async Task GetCart_ReturnsNotFound_WhenCartDoesNotExist()
+    public async Task GetCartReturnsNotFoundWhenCartDoesNotExist()
     {
-        // Arrange
         var key = "nonexistent";
-        _cartServiceMock
+        this.cartServiceMock
             .Setup(s => s.GetCartAsync(key))
             .ReturnsAsync((CartDto?)null);
 
-        // Act
-        var result = await _controller.GetCart(key);
+        var result = await this.controller.GetCart(key);
 
-        // Assert
         Assert.That(result, Is.InstanceOf<NotFoundResult>());
     }
 
+    /// <summary>
+    /// Verifies that GetCart calls the service with the correct key.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test.</returns>
     [Test]
-    public async Task GetCart_CallsServiceWithCorrectKey()
+    public async Task GetCartCallsServiceWithCorrectKey()
     {
-        // Arrange
         var key = "cart-1";
-        _cartServiceMock
+        this.cartServiceMock
             .Setup(s => s.GetCartAsync(key))
             .ReturnsAsync(new CartDto { Key = key });
 
-        // Act
-        await _controller.GetCart(key);
+        await this.controller.GetCart(key);
 
-        // Assert
-        _cartServiceMock.Verify(s => s.GetCartAsync(key), Times.Once);
+        this.cartServiceMock.Verify(s => s.GetCartAsync(key), Times.Once);
     }
 }

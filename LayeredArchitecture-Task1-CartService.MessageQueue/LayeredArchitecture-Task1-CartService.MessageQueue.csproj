@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <RootNamespace>LayeredArchitecture_Task1_CartService.MessageQueue</RootNamespace>
+    <RootNamespace>LayeredArchitectureTask1CartService.MessageQueue</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
