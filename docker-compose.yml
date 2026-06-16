@@ -1,0 +1,69 @@
+﻿services:
+  # ──────────────────────────────────────────────────────────
+  # RabbitMQ – message broker used for async communication
+  # ──────────────────────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3-management          # Official RabbitMQ image with the management UI plugin
+    container_name: cart-rabbitmq          # Fixed container name for easy reference
+    ports:
+      - "5672:5672"                        # AMQP protocol port (application ↔ RabbitMQ)
+      - "15672:15672"                      # Management UI port (http://localhost:15672)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest         # Default username for RabbitMQ login
+      RABBITMQ_DEFAULT_PASS: guest         # Default password for RabbitMQ login
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq    # Persist queues & messages across container restarts
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]  # Verify RabbitMQ ports are open
+      interval: 10s                        # Run the check every 10 seconds
+      timeout: 5s                          # Fail the check if it takes longer than 5 seconds
+      retries: 5                           # Mark unhealthy after 5 consecutive failures
+
+  # ──────────────────────────────────────────────────────────
+  # Keycloak – identity provider for JWT authentication
+  # ──────────────────────────────────────────────────────────
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest  # Official Keycloak image from Quay.io
+    container_name: cart-keycloak            # Fixed container name for easy reference
+    ports:
+      - "8080:8080"                          # Keycloak web UI & token endpoints
+    environment:
+      KEYCLOAK_ADMIN: admin                  # Initial admin console username
+      KEYCLOAK_ADMIN_PASSWORD: admin         # Initial admin console password
+    command: start-dev                       # Start in dev mode (HTTP only, no HTTPS required)
+    volumes:
+      - keycloak_data:/opt/keycloak/data     # Persist realm config & user data
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo done"]  # TCP check on port 8080
+      interval: 10s                          # Run the check every 10 seconds
+      timeout: 5s                            # Fail the check if it takes longer than 5 seconds
+      retries: 10                            # Mark unhealthy after 10 consecutive failures
+      start_period: 30s                      # Give Keycloak 30 s to boot before counting failures
+
+  # ──────────────────────────────────────────────────────────
+  # Cart Service – the .NET 9 API application
+  # ──────────────────────────────────────────────────────────
+  cart-service:
+    build:
+      context: .                             # Build context is the solution root directory
+      dockerfile: Dockerfile                 # Path to the Dockerfile
+    container_name: cart-service             # Fixed container name for easy reference
+    ports:
+      - "5000:8080"                          # Map host port 5000 → container port 8080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker        # Loads appsettings.Docker.json in the app
+    volumes:
+      - cart_data:/app/data                  # Persist LiteDB database file across restarts
+    depends_on:
+      rabbitmq:
+        condition: service_healthy           # Wait until RabbitMQ passes its healthcheck
+      keycloak:
+        condition: service_healthy           # Wait until Keycloak passes its healthcheck
+
+# ──────────────────────────────────────────────────────────
+# Named volumes – Docker-managed persistent storage
+# ──────────────────────────────────────────────────────────
+volumes:
+  rabbitmq_data:                             # Stores RabbitMQ queues and messages
+  keycloak_data:                             # Stores Keycloak realm & user data
+  cart_data:                                 # Stores the LiteDB database file

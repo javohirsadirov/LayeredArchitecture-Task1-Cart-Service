@@ -79,12 +79,13 @@ builder.Services.AddAuthorization();
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
-        options.Authority = "http://localhost:8080/realms/store-realm";
+        options.Authority = builder.Configuration["Keycloak:Authority"];
         options.RequireHttpsMetadata = false;
 
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
         {
             ValidateAudience = false, // for Keycloak
+            ValidateIssuer = false, // allows tokens obtained via localhost when service resolves Keycloak by container name
         };
 
         options.Events = new JwtBearerEvents
@@ -118,7 +119,7 @@ builder.Services.AddAuthentication("Bearer")
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docker")
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>

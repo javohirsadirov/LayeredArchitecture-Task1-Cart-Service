@@ -21,8 +21,12 @@ public static class RegisterRepositoryServices
     {
         services.AddTransient<ICartRepository, CartRepository>();
 
+        var dataDir = Path.Combine(AppContext.BaseDirectory, "data");
+        Directory.CreateDirectory(dataDir);
+        var dbPath = Path.Combine(dataDir, "mydata.db");
+
         services.AddSingleton<LiteDatabase>(_ =>
-            new LiteDatabase("Filename=mydata.db;Connection=Shared;"));
+            new LiteDatabase($"Filename={dbPath};Connection=Shared;"));
 
         return services;
     }
