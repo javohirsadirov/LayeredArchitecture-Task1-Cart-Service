@@ -1,0 +1,15 @@
+﻿C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\Controllers\V1\CartController.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\Controllers\V2\CartController.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\Middlewares\TokenLoggingMiddleware.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\Program.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\Swagger\SwaggerDefaultValues.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\obj\Debug\net9.0\LayeredArchitecture-Task1-Cart-Service.API.GlobalUsings.g.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\obj\Debug\net9.0\.NETCoreApp,Version=v9.0.AssemblyAttributes.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\obj\Debug\net9.0\LayeredArchitecture-Task1-Cart-Service.API.AssemblyInfo.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\obj\Debug\net9.0\LayeredArchitecture-Task1-Cart-Service.API.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\appsettings.Development.json
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\appsettings.json
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service.API.csproj.Backup.tmp
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service.http
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\mydata.db
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service\Properties\launchSettings.json

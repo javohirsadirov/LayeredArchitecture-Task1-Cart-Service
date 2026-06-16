@@ -1,0 +1,6 @@
+﻿C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-CartService.MessageQueue\Implementation\ProductUpdatedConsumerService.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-CartService.MessageQueue\MessageQueueServiceExtensions.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-CartService.MessageQueue\Messages\ProductUpdatedMessage.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-CartService.MessageQueue\ProductUpdatedSettings.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-CartService.MessageQueue\RabbitMQOptions.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-CartService.MessageQueue\LayeredArchitecture-Task1-CartService.MessageQueue.csproj.Backup.tmp

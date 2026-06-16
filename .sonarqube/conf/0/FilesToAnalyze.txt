@@ -1,0 +1,5 @@
+﻿C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service.Repository\CartService\Implementation\CartRepository.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service.Repository\CartService\Interfaces\ICartRepository.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service.Repository\Models\Cart.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service.Repository\Models\Item.cs
+C:\Users\JavohirSadirov\source\repos\LayeredArchitecture-Task1-Cart-Service\LayeredArchitecture-Task1-Cart-Service.Repository\RegisterRepositoryServices.cs
